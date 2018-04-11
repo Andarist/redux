@@ -34,9 +34,21 @@ export default function applyMiddleware(...middlewares) {
     chain = middlewares.map(middleware => middleware(middlewareAPI))
     dispatch = compose(...chain)(store.dispatch)
 
-    return {
+    const symbols = typeof Object.getOwnPropertySymbols === 'function'
+      ? Object.getOwnPropertySymbols(store).filter(sym => {
+        return Object.getOwnPropertyDescriptor(store, sym).enumerable
+      })
+      : []
+
+    const finalStore = {
       ...store,
       dispatch
     }
+
+    symbols.forEach(symbol => {
+      finalStore[symbol] = store[symbol]
+    })
+
+    return finalStore
   }
 }
